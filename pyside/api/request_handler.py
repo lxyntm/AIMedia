@@ -8,7 +8,7 @@ import requests
 from PySide6.QtCore import QSettings
 from requests.exceptions import Timeout
 
-BASE_URL = "" # 后台base API
+BASE_URL = "http://127.0.0.1:8000/api" # 后台base API
 
 
 class ApiRequest:

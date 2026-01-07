@@ -27,8 +27,8 @@ env = environ.Env(
     WECHAT_APPID=(str, ""),
     WECHAT_SECRET=(str, ""),
     WECHAT_REDIRECT_URI=(str, ""),
-    CSRF_TRUSTED_ORIGINS=(list, ""),
-    MAIN_URL=(str, ""),
+    CSRF_TRUSTED_ORIGINS=(list, []),
+    MAIN_URL=(str, "http://localhost:8000/"),
     GML_KEY=(str, ""),
     WECHAT_PAY_MCHID=(str, ""),
     WECHAT_PAY_CERT_SERIAL_NO=(str, ""),
@@ -106,10 +106,17 @@ ASGI_APPLICATION = "ArticleManagePlus.asgi.application"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {"default": env.db("DEFAULT_DATABASE", "sqlite:///db.sqlite3")}
-CACHES = {
-    "default": env.cache_url("REDIS_URL"),
-}
+# 将这行注释掉
+# CACHES = {
+#     "default": env.cache_url("REDIS_URL"),
+# }
 
+# 使用本地内存缓存
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+    }
+}
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -199,7 +206,8 @@ WECHAT_REDIRECT_URI = env("WECHAT_REDIRECT_URI")  # 微信授权回调URL
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS")
+# Set default CSRF trusted origins with proper scheme
+CSRF_TRUSTED_ORIGINS = ["http://localhost:8000"]
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 524288000  # 500MB
 

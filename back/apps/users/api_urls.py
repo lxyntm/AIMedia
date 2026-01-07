@@ -23,6 +23,8 @@ urlpatterns = [
     path("check_member/", views.CheckMember.as_view(), name="check_member"),
     path('ai_article/', views.AiArticleAPIView.as_view(), name='ai_article'),
     path('gml_key/', views.GLMAPIView.as_view(), name='gml_key'),
+    path('wechat/login/', views.WechatLoginAPIView.as_view(), name='wechat_login_api'),
+    path('wechat/check/', views.WechatCheckAPIView.as_view(), name='wechat_check_api'),
 ]
 
 

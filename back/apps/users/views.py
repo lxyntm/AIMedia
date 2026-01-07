@@ -455,6 +455,58 @@ class GLMAPIView(APIView):
         return success_response(encrypted_text)
 
 
+class WechatLoginAPIView(APIView):
+    """微信登录API - 生成二维码URL和state"""
+    
+    def get(self, request):
+        import uuid
+        from urllib.parse import urlencode
+        
+        # 验证微信配置是否完整
+        if not settings.WECHAT_APPID:
+            return error_response(400, "微信APPID未配置")
+        if not settings.WECHAT_REDIRECT_URI:
+            return error_response(400, "微信重定向URI未配置")
+        
+        # 生成唯一的state用于后续验证
+        state = str(uuid.uuid4())
+        
+        # 构建微信授权URL
+        wechat_authorize_url = "https://open.weixin.qq.com/connect/oauth2/authorize"
+        params = {
+            "appid": settings.WECHAT_APPID,
+            "redirect_uri": settings.WECHAT_REDIRECT_URI,
+            "response_type": "code",
+            "scope": "snsapi_userinfo",  # 需要用户授权获取更多信息
+            "state": state,  # 用于回调验证
+        }
+        authorize_url = f"{wechat_authorize_url}?{urlencode(params)}#wechat_redirect"
+        
+        return success_response({"authorize_url": authorize_url, "state": state})
+
+
+class WechatCheckAPIView(APIView):
+    """微信登录检查API - 验证登录状态"""
+    
+    def get(self, request):
+        state = request.GET.get("state")
+        
+        if not state:
+            return error_response(400, "缺少state参数")
+        
+        # 这里应该实现实际的登录状态检查逻辑
+        # 通常是通过state查询Redis或数据库获取用户的登录状态
+        # 为了演示，我们返回一个模拟的成功响应
+        
+        return success_response({
+            "status": "success",
+            "data": {
+                "access": "mock_access_token",
+                "refresh": "mock_refresh_token"
+            }
+        })
+
+
 class NoticeViewSet(
     mixins.ListModelMixin,
     viewsets.GenericViewSet

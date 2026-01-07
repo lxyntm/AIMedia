@@ -162,7 +162,7 @@ class OnlineAPIView(APIView):
 
 class QrCodeAPIView(APIView):
     def get(self, request):
-        url = f"{main_url}api/users/wechat/login/"
+        url = f"{main_url}api/user/wechat/login/"
         response = requests.get(url)
         data = response.json()
         return JsonResponse(data)
@@ -172,7 +172,7 @@ class CheckinView(APIView):
 
     def get(self, request):
         state = request.GET.get("state")
-        url = f"{main_url}api/users/wechat/check/?state={state}"
+        url = f"{main_url}api/user/wechat/check/?state={state}"
         response = requests.get(url)
         data = response.json()
         if data['result']["status"] == "success":

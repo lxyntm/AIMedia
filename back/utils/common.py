@@ -8,7 +8,7 @@ import json
 import random
 import time
 
-from utils.redis_cli import rd
+from utils.redis_cli import get_redis_connection
 
 
 def get_all_objects(key):
@@ -16,7 +16,7 @@ def get_all_objects(key):
     获取 Redis 哈希表中存储的所有对象。
     :return: 对象列表
     """
-    all_data = rd.hgetall(key)
+    all_data = get_redis_connection().hgetall(key)
     return [json.loads(value) for value in all_data.values()]
 
 
@@ -30,13 +30,13 @@ def delete_object_by_key(key, field):
     :return: 删除操作是否成功（True 或 False）
     """
     # 检查字段是否存在
-    if rd.hexists(key, field):
+    if get_redis_connection().hexists(key, field):
         # 删除指定字段
-        rd.hdel(key, field)
+        get_redis_connection().hdel(key, field)
 
         # 检查哈希表是否已空
-        if rd.hlen(key) == 0:
-            rd.delete(key)  # 删除整个哈希表
+        if get_redis_connection().hlen(key) == 0:
+            get_redis_connection().delete(key)  # 删除整个哈希表
 
 
 def update_objects_with_cleanup(objects, key):
@@ -49,7 +49,7 @@ def update_objects_with_cleanup(objects, key):
         temp_key = f"{key}_temp"
 
         # 写入临时键
-        with rd.pipeline() as pipe:
+        with get_redis_connection().pipeline() as pipe:
             # 按user_id分组存储对象
             grouped_objects = {}
             for obj in objects:
@@ -66,11 +66,11 @@ def update_objects_with_cleanup(objects, key):
             pipe.execute()
 
         # 使用 rename 替换原键
-        rd.rename(temp_key, key)
+        get_redis_connection().rename(temp_key, key)
     else:
         # 检查键是否存在，避免不必要的删除操作
-        if rd.exists(key):
-            rd.delete(key)
+        if get_redis_connection().exists(key):
+            get_redis_connection().delete(key)
 
 
 def generate_order_no(order_header):

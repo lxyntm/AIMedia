@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>登录 - 智能媒体管理平台</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://adminlte.io/themes/AdminLTE/bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .login-box {
+            width: 100%;
+            max-width: 450px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .login-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .login-header h2 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 500;
+        }
+        .login-body {
+            padding: 30px;
+        }
+        .nav-tabs {
+            border-bottom: none;
+            display: flex;
+        }
+        .nav-tabs > li {
+            flex: 1;
+            text-align: center;
+        }
+        .nav-tabs > li > a {
+            margin-right: 0;
+            border: none;
+            border-radius: 0;
+            padding: 15px;
+            background: #f8f9fa;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        .nav-tabs > li.active > a,
+        .nav-tabs > li.active > a:hover,
+        .nav-tabs > li.active > a:focus {
+            border: none;
+            background: white;
+            color: #495057;
+            border-bottom: 3px solid #667eea;
+        }
+        .tab-pane {
+            padding: 20px 0;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-control {
+            height: 45px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            padding: 12px 15px;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-login {
+            width: 100%;
+            height: 45px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            font-weight: 500;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .qr-container {
+            text-align: center;
+            padding: 20px;
+        }
+        .qr-placeholder {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 20px;
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .qr-tip {
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 25px 0;
+        }
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .divider::before {
+            margin-right: 10px;
+        }
+        .divider::after {
+            margin-left: 10px;
+        }
+        .social-login {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .social-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background: white;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .social-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        .social-btn i {
+            font-size: 18px;
+            margin-right: 8px;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .text-muted {
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <div class="login-header">
+            <h2>欢迎使用智能媒体管理平台</h2>
+        </div>
+        <div class="login-body">
+            <!-- Tab导航 -->
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active">
+                    <a href="#account" aria-controls="account" role="tab" data-toggle="tab">账号登录</a>
+                </li>
+                <li role="presentation">
+                    <a href="#wechat" aria-controls="wechat" role="tab" data-toggle="tab">微信登录</a>
+                </li>
+            </ul>
+
+            <!-- Tab内容 -->
+            <div class="tab-content">
+                <!-- 账号登录Tab -->
+                <div role="tabpanel" class="tab-pane active" id="account">
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="username" name="username" placeholder="邮箱/手机号" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="password" class="form-control" id="password" name="password" placeholder="密码" required>
+                        </div>
+                        <button type="submit" class="btn btn-login">登录</button>
+                    </form>
+                    <div class="divider">
+                        <span>其他登录方式</span>
+                    </div>
+                    <div class="social-login">
+                        <div class="social-btn" onclick="location.href='/user/wechat/login/'">
+                            <i class="fab fa-weixin"></i> 微信登录
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 微信登录Tab -->
+                <div role="tabpanel" class="tab-pane" id="wechat">
+                    <div class="qr-container">
+                        <div class="qr-placeholder">
+                            <div>
+                                <i class="fab fa-weixin" style="font-size: 48px; color: #1AAD19;"></i>
+                                <p style="margin-top: 10px;">打开微信扫一扫登录</p>
+                            </div>
+                        </div>
+                        <p class="qr-tip">请使用微信扫描二维码登录</p>
+                    </div>
+                    <div class="text-center">
+                        <button class="btn btn-default" style="background: #f8f9fa; border: 1px solid #ddd;" onclick="$('#account').click();">
+                            返回账号登录
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // 表单提交处理
+            $('#loginForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                var formData = {
+                    username: $('#username').val(),
+                    password: $('#password').val()
+                };
+                
+                $.ajax({
+                    url: '/api/user/login/',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function(response) {
+                        // 检查响应格式是否正确
+                        if (response && typeof response === 'object') {
+                            if (response.code === 0 && response.result && response.result.access && response.result.refresh) {
+                                // 登录成功，存储token并跳转
+                                localStorage.setItem('access_token', response.result.access);
+                                localStorage.setItem('refresh_token', response.result.refresh);
+                                
+                                // 跳转到仪表板
+                                window.location.href = '/user/dashboard/';
+                            } else {
+                                // 登录失败，显示错误信息
+                                var errorMessage = response.message || '登录失败';
+                                alert('登录失败: ' + errorMessage);
+                            }
+                        } else {
+                            // 响应格式不正确
+                            alert('登录失败：响应格式错误');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        try {
+                            var response = JSON.parse(xhr.responseText);
+                            var errorMessage = response.message || '登录失败';
+                            alert('登录失败: ' + errorMessage);
+                        } catch(e) {
+                            alert('登录失败，请稍后重试');
+                        }
+                    }
+                });
+            });
+            
+            // 微信登录Tab点击事件
+            $('a[href="#wechat"]').on('shown.bs.tab', function() {
+                // 这里可以加载微信登录二维码
+                loadWechatQR();
+            });
+        });
+        
+        function loadWechatQR() {
+            // 模拟加载微信二维码，实际应用中这里会从服务器获取真实的二维码
+            console.log('加载微信登录二维码...');
+        }
+    </script>
+</body>
+</html>

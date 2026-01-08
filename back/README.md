@@ -265,3 +265,22 @@ python manage.py runserver
 cd D:\traeprojects\AIMedia\pyside
 venv\Scripts\activate
 python main.py
+
+
+## 如何登录 Django 管理后台
+1. 访问地址 ：
+   打开浏览器，访问 http://127.0.0.1:8000/admin/
+2. 登录凭据 ：
+   
+   - 用户名：可以使用以下任一邮箱
+     - user1@example.com
+     - user2@example.com
+     - 或者使用昵称 admin （对应 ID 为 3 的用户）
+   - 密码： admin123456
+3. 安全提醒 ：
+   登录后请立即更改密码，以确保系统安全。
+## 其他登录方式
+除了 Django admin 后台，您还可以使用以下方式登录：
+
+- 用户仪表板 ：通过 http://127.0.0.1:8000/user/dashboard/ 访问，支持账号登录和微信扫码登录
+- 右上角登录 ：在管理平台右上角点击"登录"按钮，会弹出登录对话框

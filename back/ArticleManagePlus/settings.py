@@ -180,6 +180,12 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
+# Authentication backends - 支持多种登录方式
+AUTHENTICATION_BACKENDS = [
+    'apps.users.authentication.MultiAuthBackend',  # 自定义多方式认证后端
+    'django.contrib.auth.backends.ModelBackend',  # 默认认证后端
+]
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=7),
 }

@@ -9,22 +9,40 @@ from utils.models import BaseModel
 
 
 class CustomUserManager(BaseUserManager):
-    def create_user(self, phone, password=None, **extra_fields):
+    def create_user(self, email=None, password=None, **extra_fields):
         """
-        创建普通用户
+        创建普通用户，支持邮箱注册
         """
-        if not phone:
-            raise ValueError("The Phone field must be set")
+        if not email:
+            raise ValueError("The Email field must be set")
+        email = self.normalize_email(email)
         # 设置默认字段
         extra_fields.setdefault("is_active", True)
-        user = self.model(phone=phone, **extra_fields)
+        user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, open_id, password=None, **extra_fields):
+    def create_user_by_openid(self, open_id, password=None, **extra_fields):
         """
-        创建超级用户
+        通过open_id创建用户，用于微信登录
+        """
+        if not open_id:
+            raise ValueError("The OpenID field must be set")
+        # 设置默认字段
+        extra_fields.setdefault("is_active", True)
+        user = self.model(open_id=open_id, **extra_fields)
+        if password:
+            user.set_password(password)
+        else:
+            # 微信登录的用户通常不需要密码
+            user.set_password(None)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email=None, password=None, **extra_fields):
+        """
+        创建超级用户，支持邮箱注册
         """
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
@@ -34,14 +52,14 @@ class CustomUserManager(BaseUserManager):
         if not extra_fields.get("is_superuser"):
             raise ValueError("Superuser must have is_superuser=True.")
 
-        return self.create_user(open_id, password, **extra_fields)
+        return self.create_user(email, password, **extra_fields)
 
 
 # 扩展用户表
 class Users(AbstractUser):
     # 增加一个字段
     username = None  # 删除默认的 username 字段
-    open_id = models.CharField(max_length=100, unique=True, db_index=True, verbose_name="微信OpenID")
+    open_id = models.CharField(max_length=100, unique=True, db_index=True, verbose_name="微信OpenID", null=True, blank=True)
     nickname = models.CharField(
         max_length=50, default="", verbose_name="昵称"
     )
@@ -49,6 +67,7 @@ class Users(AbstractUser):
     phone = models.CharField(
         max_length=20, default="", verbose_name="手机号"
     )
+    email = models.EmailField(max_length=100, unique=True, db_index=True, verbose_name="邮箱", null=True, blank=True)
 
     expiry_time = models.DateTimeField(blank=True, null=True, verbose_name="到期时间")
     user = models.ForeignKey(
@@ -68,8 +87,8 @@ class Users(AbstractUser):
         verbose_name="用户等级",
     )
 
-    USERNAME_FIELD = "open_id"  # 使用 open_id 作为登录标识
-    REQUIRED_FIELDS = []  # 去除 username 的必填要求
+    USERNAME_FIELD = "email"  # 使用 email 作为主要登录标识，支持邮箱登录
+    REQUIRED_FIELDS = ['nickname']  # 去除 username 的必填要求，添加昵称
     objects = CustomUserManager()  # 指定自定义的用户管理器
 
     class Meta:

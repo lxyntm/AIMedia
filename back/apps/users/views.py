@@ -161,6 +161,19 @@ def dashboard(request):
     当前爬虫连接数量
     当前消费者连接数量
     """
+    # 从JWT token获取当前用户
+    current_user = None
+    jwt_auth = JWTAuthentication()
+    try:
+        # 从请求头或cookies中获取token
+        token = request.META.get('HTTP_AUTHORIZATION', '').split(' ')[-1] or request.COOKIES.get('access_token')
+        if token:
+            validated_token = jwt_auth.get_validated_token(token.encode('utf-8'))
+            current_user = jwt_auth.get_user(validated_token)
+    except Exception:
+        # 如果token无效，尝试从request.user获取（适用于session登录）
+        current_user = request.user if request.user.is_authenticated else None
+    
     context = {"user_count": get_user_model().objects.count()}
     now = datetime.now()
     context["member_count"] = (
@@ -183,6 +196,11 @@ def dashboard(request):
     context["today_token_count"] = \
         AiArticle.objects.filter(enable=True, created_at__gte=today_start).aggregate(Sum("use_token"))[
             "use_token__sum"] or 0
+    
+    # 添加当前用户到上下文
+    context['user'] = current_user
+    context['now'] = now
+    
     return render(request, "dashboard.html", context)
 
 
@@ -407,23 +425,55 @@ class AiArticleAPIView(APIView):
     serializer_class = AiArticleSerializer
 
     def get(self, request):
+        # 从JWT token获取当前用户
+        current_user = None
+        jwt_auth = JWTAuthentication()
+        try:
+            # 从请求头获取token
+            token = request.META.get('HTTP_AUTHORIZATION', '').split(' ')[-1]
+            if token:
+                validated_token = jwt_auth.get_validated_token(token.encode('utf-8'))
+                current_user = jwt_auth.get_user(validated_token)
+        except Exception:
+            # 如果token无效，尝试从request.user获取（适用于session登录）
+            current_user = request.user if request.user.is_authenticated else None
+        
+        if not current_user:
+            return error_response("用户未认证", status=401)
+        
         # 查找创建日期为当天的
         date = datetime.now()
         # 查找AiArticle创建日期为当天的use_token相加总和
         total_tokens = \
-            AiArticle.objects.filter(user=request.user, enable=True, created_at__date=date.today()).aggregate(
+            AiArticle.objects.filter(user=current_user, enable=True, created_at__date=date.today()).aggregate(
                 total_tokens=Sum('use_token')
             )['total_tokens'] or 0
         status = True
-        if total_tokens >= self.request.user.level.allow_token:
+        if hasattr(current_user, 'level') and current_user.level and total_tokens >= current_user.level.allow_token:
             status = False
         return success_response(status)
 
     def post(self, request):
+        # 从JWT token获取当前用户
+        current_user = None
+        jwt_auth = JWTAuthentication()
+        try:
+            # 从请求头获取token
+            token = request.META.get('HTTP_AUTHORIZATION', '').split(' ')[-1]
+            if token:
+                validated_token = jwt_auth.get_validated_token(token.encode('utf-8'))
+                current_user = jwt_auth.get_user(validated_token)
+        except Exception:
+            # 如果token无效，尝试从request.user获取（适用于session登录）
+            current_user = request.user if request.user.is_authenticated else None
+        
+        if not current_user:
+            return error_response("用户未认证", status=401)
+        
         data = request.data
         serializer = AiArticleSerializer(data=data)
         if serializer.is_valid():
-            instance = serializer.save(user=request.user)
+            instance = serializer.save(user=current_user)
             serializer = AiArticleSerializer(instance, many=False)
             return success_response(serializer.data)
         return error_response(serializer.errors)
@@ -435,17 +485,33 @@ class GLMAPIView(APIView):
     ]
 
     def get(self, request):
+        # 从JWT token获取当前用户
+        current_user = None
+        jwt_auth = JWTAuthentication()
+        try:
+            # 从请求头获取token
+            token = request.META.get('HTTP_AUTHORIZATION', '').split(' ')[-1]
+            if token:
+                validated_token = jwt_auth.get_validated_token(token.encode('utf-8'))
+                current_user = jwt_auth.get_user(validated_token)
+        except Exception:
+            # 如果token无效，尝试从request.user获取（适用于session登录）
+            current_user = request.user if request.user.is_authenticated else None
+        
+        if not current_user:
+            return error_response("用户未认证", status=401)
+        
         # 查找创建日期为当天的
         date = datetime.now()
         # 查找AiArticle创建日期为当天的use_token相加总和
         total_tokens = \
-            AiArticle.objects.filter(user=request.user, enable=True, created_at__date=date.today()).aggregate(
+            AiArticle.objects.filter(user=current_user, enable=True, created_at__date=date.today()).aggregate(
                 total_tokens=Sum('use_token')
             )['total_tokens'] or 0
-        if total_tokens >= self.request.user.level.allow_token:
+        if hasattr(current_user, 'level') and current_user.level and total_tokens >= current_user.level.allow_token:
             return success_response(False)
 
-        key = generate_key_from_string(self.request.user.open_id)
+        key = generate_key_from_string(current_user.open_id)
 
         # 初始化加密器
         fernet = initialize_fernet(key)
@@ -507,6 +573,48 @@ class WechatCheckAPIView(APIView):
         })
 
 
+class UserProfileAPIView(APIView):
+    """获取用户信息API"""
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        # 从JWT token获取当前用户
+        current_user = None
+        jwt_auth = JWTAuthentication()
+        try:
+            # 从请求头获取token
+            token = request.META.get('HTTP_AUTHORIZATION', '').split(' ')[-1]
+            if token:
+                validated_token = jwt_auth.get_validated_token(token.encode('utf-8'))
+                current_user = jwt_auth.get_user(validated_token)
+        except Exception:
+            # 如果token无效，尝试从request.user获取（适用于session登录）
+            current_user = request.user if request.user.is_authenticated else None
+        
+        if not current_user:
+            return error_response("用户未认证", status=401)
+        
+        # 返回用户信息
+        user_info = {
+            "id": current_user.id,
+            "email": current_user.email,
+            "nickname": current_user.nickname,
+            "avatar": current_user.avatar,
+            "open_id": current_user.open_id,
+            "level": getattr(current_user.level, 'name', '') if hasattr(current_user, 'level') and current_user.level else '',
+            "expiry_time": current_user.expiry_time.isoformat() if current_user.expiry_time else None,
+        }
+        
+        return success_response(user_info)
+
+
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
+import re
+
+
 class NoticeViewSet(
     mixins.ListModelMixin,
     viewsets.GenericViewSet
@@ -529,3 +637,209 @@ class NoticeViewSet(
         user_notice.is_read = True
         user_notice.save()
         return success_response()
+
+
+class EmailRegisterAPIView(APIView):
+    """邮箱注册API"""
+    
+    def post(self, request):
+        email = request.data.get('email')
+        password = request.data.get('password')
+        nickname = request.data.get('nickname', '')
+        
+        if not email:
+            return error_response(400, "邮箱不能为空")
+        
+        if not password:
+            return error_response(400, "密码不能为空")
+        
+        # 验证邮箱格式
+        try:
+            validate_email(email)
+        except ValidationError:
+            return error_response(400, "邮箱格式不正确")
+        
+        # 验证密码强度（至少6位）
+        if len(password) < 6:
+            return error_response(400, "密码长度不能少于6位")
+        
+        # 检查邮箱是否已存在
+        if Users.objects.filter(email=email).exists():
+            return error_response(400, "该邮箱已被注册")
+        
+        try:
+            # 创建用户
+            user = Users.objects.create_user(
+                email=email,
+                password=password,
+                nickname=nickname or email.split('@')[0]  # 如果没有提供昵称，默认使用邮箱用户名部分
+            )
+            
+            # 生成JWT token
+            refresh = RefreshToken.for_user(user)
+            
+            return success_response({
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+                "user_info": {
+                    "id": user.id,
+                    "email": user.email,
+                    "nickname": user.nickname,
+                    "avatar": user.avatar,
+                }
+            }, "注册成功")
+        except Exception as e:
+            return error_response(500, f"注册失败: {str(e)}")
+
+
+class EmailLoginAPIView(APIView):
+    """邮箱登录API"""
+    
+    def post(self, request):
+        username = request.data.get('username')  # 可以是邮箱、手机号或open_id
+        password = request.data.get('password')
+        
+        if not username:
+            return error_response(400, "用户名/邮箱/手机号不能为空")
+        
+        if not password:
+            return error_response(400, "密码不能为空")
+        
+        # 使用自定义认证后端进行认证
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            # 生成JWT token
+            refresh = RefreshToken.for_user(user)
+            
+            return success_response({
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+                "user_info": {
+                    "id": user.id,
+                    "email": user.email,
+                    "nickname": user.nickname,
+                    "avatar": user.avatar,
+                    "open_id": user.open_id,
+                }
+            }, "登录成功")
+        else:
+            return error_response(400, "用户名或密码错误")
+
+
+def login_page(request):
+    """登录页面"""
+    # 检查用户是否已经通过JWT登录
+    current_user = None
+    jwt_auth = JWTAuthentication()
+    try:
+        # 从请求头或cookies中获取token
+        token = request.META.get('HTTP_AUTHORIZATION', '').split(' ')[-1] or request.COOKIES.get('access_token')
+        if token:
+            validated_token = jwt_auth.get_validated_token(token.encode('utf-8'))
+            current_user = jwt_auth.get_user(validated_token)
+    except Exception:
+        # 如果token无效，尝试从request.user获取（适用于session登录）
+        current_user = request.user if request.user.is_authenticated else None
+    
+    # 如果用户已经登录，则重定向到仪表板
+    if current_user and current_user.is_authenticated:
+        return redirect('dashboard')
+    
+    return render(request, "login.html")
+
+
+class RegisterLoginAPIView(APIView):
+    """通用注册登录API，支持邮箱注册和多种方式登录"""
+    
+    def post(self, request):
+        action = request.data.get('action')  # 'register' 或 'login'
+        
+        if action == 'register':
+            return self._register(request)
+        elif action == 'login':
+            return self._login(request)
+        else:
+            return error_response(400, "操作类型错误，应为 register 或 login")
+    
+    def _register(self, request):
+        """处理注册请求"""
+        email = request.data.get('email')
+        password = request.data.get('password')
+        nickname = request.data.get('nickname', '')
+        
+        if not email:
+            return error_response(400, "邮箱不能为空")
+        
+        if not password:
+            return error_response(400, "密码不能为空")
+        
+        # 验证邮箱格式
+        try:
+            validate_email(email)
+        except ValidationError:
+            return error_response(400, "邮箱格式不正确")
+        
+        # 验证密码强度（至少6位）
+        if len(password) < 6:
+            return error_response(400, "密码长度不能少于6位")
+        
+        # 检查邮箱是否已存在
+        if Users.objects.filter(email=email).exists():
+            return error_response(400, "该邮箱已被注册")
+        
+        try:
+            # 创建用户
+            user = Users.objects.create_user(
+                email=email,
+                password=password,
+                nickname=nickname or email.split('@')[0]  # 如果没有提供昵称，默认使用邮箱用户名部分
+            )
+            
+            # 生成JWT token
+            refresh = RefreshToken.for_user(user)
+            
+            return success_response({
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+                "user_info": {
+                    "id": user.id,
+                    "email": user.email,
+                    "nickname": user.nickname,
+                    "avatar": user.avatar,
+                }
+            }, "注册成功")
+        except Exception as e:
+            return error_response(500, f"注册失败: {str(e)}")
+    
+    def _login(self, request):
+        """处理登录请求"""
+        username = request.data.get('username')  # 可以是邮箱、手机号或open_id
+        password = request.data.get('password')
+        
+        if not username:
+            return error_response(400, "用户名/邮箱/手机号不能为空")
+        
+        if not password:
+            return error_response(400, "密码不能为空")
+        
+        # 使用自定义认证后端进行认证
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            # 生成JWT token
+            refresh = RefreshToken.for_user(user)
+            
+            return success_response({
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+                "user_info": {
+                    "id": user.id,
+                    "email": user.email,
+                    "nickname": user.nickname,
+                    "avatar": user.avatar,
+                    "open_id": user.open_id,
+                }
+            }, "登录成功")
+        else:
+            return error_response(400, "用户名或密码错误")

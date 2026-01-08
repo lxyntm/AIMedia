@@ -25,6 +25,10 @@ urlpatterns = [
     path('gml_key/', views.GLMAPIView.as_view(), name='gml_key'),
     path('wechat/login/', views.WechatLoginAPIView.as_view(), name='wechat_login_api'),
     path('wechat/check/', views.WechatCheckAPIView.as_view(), name='wechat_check_api'),
+    path('register/', views.EmailRegisterAPIView.as_view(), name='email_register'),
+    path('login/', views.EmailLoginAPIView.as_view(), name='email_login'),
+    path('auth/', views.RegisterLoginAPIView.as_view(), name='register_login'),
+    path('profile/', views.UserProfileAPIView.as_view(), name='user_profile'),
 ]
 
 

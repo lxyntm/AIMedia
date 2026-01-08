@@ -172,10 +172,13 @@ MIT License
 ### 使用方法
 运行back项目：
 cd D:\traeprojects\AIMedia\back
-venv\Scripts\activate
+.venv\Scripts\activate
 python manage.py runserver
 
 运行pyside项目：
 cd D:\traeprojects\AIMedia\pyside
-venv\Scripts\activate
+.venv\Scripts\Activate.ps1
 python main.py
+
+我需要先切换到pyside目录，然后激活虚拟环境，再安装PySide6。PowerShell中不能使用 && ，需要用分号 ; ：
+cd d:\traeprojects\AIMedia\pyside; .\pyside_env\Scripts\Activate.ps1; pip install PySide6

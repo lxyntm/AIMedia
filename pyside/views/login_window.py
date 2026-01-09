@@ -449,7 +449,7 @@ class LoginWindow(QMainWindow):
             
             # 获取后端地址
             backend_url = AuthService.get_backend_url()
-            login_url = f"{backend_url}/api/users/login/"
+            login_url = f"{backend_url}/user/login/"
             
             payload = {
                 'username': email,  # 可以是邮箱、手机号或open_id
@@ -460,8 +460,8 @@ class LoginWindow(QMainWindow):
             
             if response.status_code == 200:
                 result = response.json()
-                if result.get('code') == 200:
-                    token_data = result.get('data', {})
+                if result.get('code') == 0:
+                    token_data = result.get('result', {})
                     access_token = token_data.get('access')
                     
                     if access_token:
@@ -473,7 +473,7 @@ class LoginWindow(QMainWindow):
                     else:
                         QMessageBox.critical(self, "错误", "登录失败：未获取到访问令牌")
                 else:
-                    error_msg = result.get('msg', '登录失败')
+                    error_msg = result.get('message', '登录失败')
                     QMessageBox.critical(self, "错误", f"登录失败: {error_msg}")
             else:
                 QMessageBox.critical(self, "错误", f"登录请求失败: {response.status_code}")
@@ -512,7 +512,7 @@ class LoginWindow(QMainWindow):
             
             # 获取后端地址
             backend_url = AuthService.get_backend_url()
-            register_url = f"{backend_url}/api/users/register/"
+            register_url = f"{backend_url}/user/register/"
             
             payload = {
                 'email': email,
@@ -524,8 +524,8 @@ class LoginWindow(QMainWindow):
             
             if response.status_code == 200:
                 result = response.json()
-                if result.get('code') == 200:
-                    token_data = result.get('data', {})
+                if result.get('code') == 0:
+                    token_data = result.get('result', {})
                     access_token = token_data.get('access')
                     
                     if access_token:
@@ -537,7 +537,7 @@ class LoginWindow(QMainWindow):
                     else:
                         QMessageBox.critical(self, "错误", "注册失败：未获取到访问令牌")
                 else:
-                    error_msg = result.get('msg', '注册失败')
+                    error_msg = result.get('message', '注册失败')
                     QMessageBox.critical(self, "错误", f"注册失败: {error_msg}")
             else:
                 QMessageBox.critical(self, "错误", f"注册请求失败: {response.status_code}")

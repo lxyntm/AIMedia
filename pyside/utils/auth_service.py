@@ -98,6 +98,11 @@ class AuthService:
         settings.setValue("token", token)
     
     @staticmethod
+    def get_backend_url() -> str:
+        """获取后端API基础URL"""
+        return AuthService.BASE_URL
+
+    @staticmethod
     def get_token() -> Optional[str]:
         """从设置中获取token"""
         settings = QSettings("AiMedia", "ai-media")

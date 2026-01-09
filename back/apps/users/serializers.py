@@ -29,7 +29,9 @@ class AccountsSerializer(BaseSerializer):
             # 获取当前用户已绑定的账号数量
             user = self.context["request"].user
             account_count = Accounts.objects.filter(user=user).exclude(status=4).count()
-            if user.level.level == 0 and account_count >= 5:
+            # 检查level是否为None，默认为普通用户(0级)
+            user_level = user.level.level if user.level else 0
+            if user_level == 0 and account_count >= 5:
                 raise serializers.ValidationError("普通用户最多只能绑定5个账号")
         return attrs
 

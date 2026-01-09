@@ -180,6 +180,8 @@ pip install -r requirements.txt
 - 百度网盘: https://pan.baidu.com/s/1x6J3K4KdWrI9vOG8yvSSBw  提取码：7jyw
 
 下载后解压，整个目录放到 `.\AIMedia\pyside` 里面，最终的文件路径应该是这样: `.\AIMedia\pyside\chrome`
+下载 ChromeDriver 并放到 `.\AIMedia\pyside\chrome` 里面，最终的文件路径应该是这样: `.\AIMedia\pyside\chrome\chromedriver.exe`
+https://mirrors.huaweicloud.com/chromedriver/
 
 #### 4. 启动项目
 

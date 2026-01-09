@@ -124,15 +124,30 @@ class AddAccountDialog(QDialog):
                 nickname, cookie, uid = get_cookie_weixin(auto.get_driver())
             elif self.platform == "企鹅号":
                 nickname, cookie, uid = get_cookie_qiehao(auto.get_driver())
+            elif self.platform == "百家号":
+                nickname, cookie, uid = auto.get_cookies("百家号")
             else:
                 nickname, cookie, uid = get_cookie_baijiahao(auto.get_driver())
+            # 只保留cookie的name和value，避免发送过多无关信息
+            simplified_cookies = [
+                {"name": c.get('name', ''), "value": c.get('value', '')} 
+                for c in cookie if c.get('name') and c.get('value')
+            ]
+            
             account_data = {
                 "platform": self.platform,
                 "nickname": nickname,
                 "uid": uid,
-                "cookie": cookie
+                "cookie": simplified_cookies
             }
 
+            # 添加调试信息
+            print(f"获取到的账号数据: {account_data}")
+            print(f"Cookie数量: {len(simplified_cookies)}")
+            if simplified_cookies:
+                print(f"第一个Cookie: {simplified_cookies[0]}")
+                print(f"最后一个Cookie: {simplified_cookies[-1]}")
+            
             self.data_fetched.emit(account_data)  # 发射信号，传递数据
 
 
@@ -161,8 +176,11 @@ class AddAccountDialog(QDialog):
             "企鹅号":2,
             "微信公众号":3
         }
+        # 确保nickname不为空
+        nickname = account_data["nickname"] or f"{account_data['platform']}_用户_{account_data['uid'][:8]}"
+        
         data = {
-            "nickname": account_data["nickname"],
+            "nickname": nickname,
             "uid": account_data["uid"],
             "platform": platform_dict[account_data["platform"]],
             "expiry_time": formatted_future_time,

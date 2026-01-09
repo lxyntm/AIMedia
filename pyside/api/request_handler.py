@@ -6,7 +6,7 @@
 # @file:request_handler.py
 import requests
 from PySide6.QtCore import QSettings
-from requests.exceptions import Timeout
+from requests.exceptions import Timeout, JSONDecodeError
 
 BASE_URL = "http://127.0.0.1:8000/api" # 后台base API
 
@@ -29,7 +29,19 @@ class ApiRequest:
 
     def _handle_response(self, response):
         """统一处理响应"""
-        data = response.json()
+        
+        try:
+            # 检查响应内容是否为空
+            if not response.text:
+                print("响应内容为空!")
+                raise Exception(f"空响应: {response.status_code} - {response.reason}")
+                
+            data = response.json()
+
+        except (ValueError, JSONDecodeError) as e:
+            # 处理JSON解析错误
+            raise Exception(f"无效的JSON响应: {response.status_code} - {response.reason}")
+        
         if data['code'] == 2000:
             return data['code']
         if data['code'] == 0:

@@ -41,8 +41,11 @@ class AutoUpdater:
         :return: (是否有更新, 更新信息)
         """
         try:
-            # 发送请求
-            response = requests.get(self.config["update_server"]["base_url"])
+            # 发送请求，设置超时时间避免长时间等待
+            response = requests.get(
+                self.config["update_server"]["base_url"],
+                timeout=(10, 30)  # (连接超时, 读取超时)
+            )
             if response.status_code != 200:
                 logging.error(f"检查更新失败: HTTP {response.status_code}")
                 return False, None
@@ -86,6 +89,18 @@ class AutoUpdater:
             
             return False, None
             
+        except requests.exceptions.ConnectionError as e:
+            logging.error(f"检查更新时连接错误: {str(e)}")
+            return False, None
+        except requests.exceptions.Timeout as e:
+            logging.error(f"检查更新时超时: {str(e)}")
+            return False, None
+        except requests.exceptions.RequestException as e:
+            logging.error(f"检查更新时发生请求异常: {str(e)}")
+            return False, None
+        except ValueError as e:  # JSON decode error
+            logging.error(f"解析更新响应时出错: {str(e)}")
+            return False, None
         except Exception as e:
             logging.error(f"检查更新失败: {str(e)}")
             return False, None

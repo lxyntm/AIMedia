@@ -54,7 +54,9 @@ class AccountsViewSet(viewsets.ModelViewSet):
         account = Accounts.objects.filter(uid=uid).first()
         if account:
             account_count = Accounts.objects.filter(user=self.request.user).exclude(status=4).count()
-            if self.request.user.level.level == 0 and account_count >= 5:
+            # 检查level是否为None，默认为普通用户(0级)
+            user_level = self.request.user.level.level if self.request.user.level else 0
+            if user_level == 0 and account_count >= 5:
                 return error_response(400, "普通用户最多只能绑定5个账号")
             # 因为uid是唯一约束 所以更新要去掉这个字段
             data.pop("uid", None)

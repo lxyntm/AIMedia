@@ -48,6 +48,13 @@ class WritingAssistant:
             print("开始生成文章")
 
             lines = topics.splitlines()
+            # 检查是否有有效的主题行
+            if not lines or lines[0].strip() == "":
+                print("错误：未提供有效的主题")
+                return {
+                    "content": "错误：未提供有效的主题",
+                    "token_usage": None
+                }
             topic = lines[0].strip()
             info = "\n".join(lines[1:]).strip()
 

@@ -97,6 +97,9 @@ class ModelService:
             prompt = prompt
         try:
             content, usetokens,enable = article_create(topic,selected_model,api_key,prompt,False)
+            # 检查content是否为布尔值（表示错误）
+            if isinstance(content, bool):
+                return f"生成预览内容失败: 文章生成错误"
             return content + '\n' + f'本次使用tokens：{usetokens}'
         except Exception as e:
             print(f"预览任务出错: {e}")

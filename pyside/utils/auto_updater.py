@@ -25,12 +25,13 @@ class AutoUpdater:
         try:
             with open(config_path, 'r', encoding='utf-8') as f:
                 self.config = json.load(f)
-                self.config["update_server"]["base_url"] = f"{BASE_URL}/api/crawler/client_version"
+                # 修复URL构建，避免重复的/api/路径
+                self.config["update_server"]["base_url"] = f"{BASE_URL.rstrip('/')}/crawler/client_version"
         except Exception as e:
             logging.error(f"加载更新配置失败: {str(e)}")
             self.config = {
                 "update_server": {
-                    "base_url": f"{BASE_URL}/api/crawler/client_version"
+                    "base_url": f"{BASE_URL.rstrip('/')}/crawler/client_version"
                 },
                 "check_interval": 3600
             }

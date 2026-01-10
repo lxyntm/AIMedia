@@ -168,37 +168,52 @@ class TaskThread(QThread):
 
     def run(self):
         try:
+            print("=== 任务线程开始运行 ===")
+            
+            # 检查会员状态
+            print("1. 检查会员状态")
             code = check_vip()
+            print(f"   会员检查结果: {code}")
             if code == 2000:
                 print('会员过期')
                 self.production_window.append_log('会员过期')
                 return
 
-            selected_model, api_key,config = user_opt()
+            # 获取用户模型配置
+            print("2. 获取用户模型配置")
+            selected_model, api_key, config = user_opt()
+            print(f"   模型配置结果: model={selected_model}, api_key={api_key}, config={config}")
             if False in [selected_model, api_key]:
                 self.production_window.append_log("请先配置模型和api_key")
                 time.sleep(10)
                 return
 
             while self._running:
-                print("11")
+                print("3. 进入任务循环")
                 try:
                     if not self.production_window or not self.production_window.isVisible():
+                        print("   生产窗口不可见，退出循环")
                         break
 
+                    # 检查用户令牌
                     self.production_window.append_log('检测用户信息')
-                    is_publish,is_not_full, api_key, selected_model, prompt = check_user_token()
-                    print("是否可以发布：", is_publish)
-                    print("是否使用我们的key：", is_not_full)
+                    print("4. 检查用户令牌")
+                    is_publish, is_not_full, api_key, selected_model, prompt = check_user_token()
+                    print(f"   令牌检查结果: is_publish={is_publish}, is_not_full={is_not_full}, api_key={api_key}, selected_model={selected_model}, prompt={prompt}")
                     
                     if not is_publish:
                         self.production_window.append_log('用户配置无效')
+                        print("   用户配置无效，退出循环")
                         break
 
+                    # 获取任务列表
                     self.production_window.append_log('开始任务')
+                    print("5. 获取任务列表")
                     data = get_news_list()
+                    print(f"   任务列表结果: {data}")
                     if not data:
                         self.production_window.append_log('获取任务列表失败')
+                        print("   获取任务列表失败，退出循环")
                         break
 
                     task = [{

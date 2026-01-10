@@ -430,6 +430,11 @@ class ModelConfigWidget(QWidget):
     def preview_article(self,topic):
         """预览文章"""
         try:
+            # 检查主题是否为空
+            if not topic or topic.strip() == "":
+                QMessageBox.warning(self, "警告", "请先在测试文案框中输入主题和内容，格式：标题+换行+内容")
+                return
+            
             config = self.get_current_config()
             selected_model = config["selected_model"]
             if not config[selected_model]["api_key"]:

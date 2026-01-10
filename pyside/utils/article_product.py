@@ -53,8 +53,8 @@ def article_create(topic, selected_model, api_key, prompt, is_not_full):
 
         result = assistant.generate_article(topic)
         
-        if not result or 'content' not in result:
-            print("No content in generation result")
+        if not result or not isinstance(result, dict) or 'content' not in result or not result['content']:
+            print(f"No valid content in generation result: {result}")
             return False, None, False
 
         article = result["content"].replace("**", "").replace('### ', '').replace('标题：', '')

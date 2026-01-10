@@ -51,7 +51,8 @@ class ApiRequest:
 
     def get(self, endpoint, params=None):
         """GET 请求"""
-        url = f"{self.base_url}/{endpoint}"
+        # 确保URL格式正确，避免重复斜杠
+        url = f"{self.base_url.rstrip('/')}/{endpoint.lstrip('/')}"
         try:
             response = requests.get(
                 url, headers=self._build_headers(), params=params, timeout=self.timeout
@@ -60,10 +61,19 @@ class ApiRequest:
         except Timeout:
             print("请求超时")
             return None
+        except requests.exceptions.ConnectionError:
+            print("网络连接失败")
+            return None
+        except (JSONDecodeError, ValueError):
+            print("JSON解析失败")
+            return None
+        except Exception as e:
+            print(f"请求异常: {e}")
+            return None
 
     def post(self, endpoint, data=None, json=None):
         """POST 请求"""
-        url = f"{self.base_url}/{endpoint}"
+        url = f"{self.base_url.rstrip('/')}/{endpoint.lstrip('/')}"
         try:
             response = requests.post(
                 url,
@@ -76,10 +86,19 @@ class ApiRequest:
         except Timeout:
             print("请求超时")
             return None
+        except requests.exceptions.ConnectionError:
+            print("网络连接失败")
+            return None
+        except (JSONDecodeError, ValueError):
+            print("JSON解析失败")
+            return None
+        except Exception as e:
+            print(f"请求异常: {e}")
+            return None
 
     def put(self, endpoint, data=None, json=None):
         """PUT 请求"""
-        url = f"{self.base_url}/{endpoint}"
+        url = f"{self.base_url.rstrip('/')}/{endpoint.lstrip('/')}"
         try:
             response = requests.put(
                 url,
@@ -92,6 +111,15 @@ class ApiRequest:
         except Timeout:
             print("请求超时")
             return None
+        except requests.exceptions.ConnectionError:
+            print("网络连接失败")
+            return None
+        except (JSONDecodeError, ValueError):
+            print("JSON解析失败")
+            return None
+        except Exception as e:
+            print(f"请求异常: {e}")
+            return None
 
     def patch(self, endpoint, data=None, json=None):
         """
@@ -101,7 +129,7 @@ class ApiRequest:
         :param json: PATCH请求的JSON数据
         :return: 返回请求的响应
         """
-        url = f"{self.base_url}/{endpoint}"
+        url = f"{self.base_url.rstrip('/')}/{endpoint.lstrip('/')}"
 
         try:
             response = requests.patch(
@@ -115,10 +143,19 @@ class ApiRequest:
         except Timeout:
             print("请求超时")
             return None
+        except requests.exceptions.ConnectionError:
+            print("网络连接失败")
+            return None
+        except (JSONDecodeError, ValueError):
+            print("JSON解析失败")
+            return None
+        except Exception as e:
+            print(f"请求异常: {e}")
+            return None
 
     def delete(self, endpoint):
         """DELETE 请求"""
-        url = f"{self.base_url}/{endpoint}"
+        url = f"{self.base_url.rstrip('/')}/{endpoint.lstrip('/')}"
         try:
             response = requests.delete(
                 url, headers=self._build_headers(), timeout=self.timeout
@@ -126,4 +163,13 @@ class ApiRequest:
             return self._handle_response(response)
         except Timeout:
             print("请求超时")
+            return None
+        except requests.exceptions.ConnectionError:
+            print("网络连接失败")
+            return None
+        except (JSONDecodeError, ValueError):
+            print("JSON解析失败")
+            return None
+        except Exception as e:
+            print(f"请求异常: {e}")
             return None

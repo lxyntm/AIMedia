@@ -1,1 +1,2 @@
 pyside/chrome/chrome.dll filter=lfs diff=lfs merge=lfs -text
+pyside/chrome/ filter=lfs diff=lfs merge=lfs -text

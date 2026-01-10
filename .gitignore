@@ -164,6 +164,7 @@ static/*
 !static/docs/
 media
 back/static
+pyside/chrome
 pyside/chrome-mac-arm64
 pyside/localData.db
 pyside/config.json

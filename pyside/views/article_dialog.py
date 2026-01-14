@@ -1,3 +1,4 @@
+import webbrowser
 from PySide6.QtWidgets import (QDialog, QVBoxLayout, QLabel, 
     QScrollArea, QWidget, QPushButton, QHBoxLayout, QTextBrowser)
 from PySide6.QtCore import Qt
@@ -62,6 +63,32 @@ class ArticleDialog(QDialog):
         btn_layout = QHBoxLayout()
         btn_layout.addStretch()
         
+        # 查看原页面按钮
+        self.original_page_btn = QPushButton("查看原页面")
+        self.original_page_btn.setFixedWidth(120)
+        self.original_page_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #3498DB;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                padding: 8px 15px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #2980B9;
+            }
+            QPushButton:disabled {
+                background-color: #BDC3C7;
+            }
+        """)
+        # 连接按钮点击事件
+        self.original_page_btn.clicked.connect(self.open_original_page)
+        # 初始禁用按钮
+        self.original_page_btn.setEnabled(False)
+        btn_layout.addWidget(self.original_page_btn)
+        
+        # 关闭按钮
         close_btn = QPushButton("关闭")
         close_btn.setFixedWidth(100)
         close_btn.clicked.connect(self.accept)
@@ -69,11 +96,22 @@ class ArticleDialog(QDialog):
         
         layout.addLayout(btn_layout)
         
+    def open_original_page(self):
+        """打开原始页面"""
+        if self.article_url:
+            webbrowser.open(self.article_url)
+    
     def set_article(self, article):
         """设置文章内容"""
         # 清除现有内容
         for i in reversed(range(self.content_layout.count())): 
             self.content_layout.itemAt(i).widget().deleteLater()
+        
+        # 提取原始链接
+        self.article_url = article.get("raw_data", {}).get("article_url", "")
+        
+        # 设置按钮状态
+        self.original_page_btn.setEnabled(bool(self.article_url))
         
         # 标题
         title = QTextBrowser()
@@ -122,6 +160,16 @@ class ArticleDialog(QDialog):
         """)
         content.setOpenExternalLinks(True)
         self.content_layout.addWidget(content)
+        
+        # 原始链接
+        if self.article_url:
+            url_label = QTextBrowser()
+            url_text = f'<a href="{self.article_url}">{self.article_url}</a>'
+            url_label.setHtml(f"<p style='color: #3498DB; font-size: 13px; margin: 10px 0;'>原始链接: {url_text}</p>")
+            url_label.setOpenExternalLinks(True)
+            url_label.setMaximumHeight(40)
+            url_label.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+            self.content_layout.addWidget(url_label)
         
         # 底部留白
         self.content_layout.addStretch()

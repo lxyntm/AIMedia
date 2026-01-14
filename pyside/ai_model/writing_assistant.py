@@ -10,7 +10,7 @@ from openai import OpenAI
 class WritingAssistant:
 
     def __init__(self, mod: str = 'glm', api_key: Optional[str] = '',
-                 temperature: float = 0.4, prompt: Optional[str] = None):
+                 temperature: float = 0.7, prompt: Optional[str] = None):
         # 创建一个共享的 token 追踪回调
         self.token_handler = TokenCallbackHandler()
         self.callbacks = [self.token_handler]

@@ -108,15 +108,14 @@ class TaskService:
         """启动任务生产任务"""
         # TODO: 实现任务生产任务
         try:
-            is_publish,is_not_full, api_key, selected_model, prompt = check_user_token()
-            print("是否可以发布：",is_publish)
-            print("是否使用我们的key：",is_not_full)
+            is_publish,is_directory_empty, api_key, selected_model, prompt = check_user_token()
+            print("是否使用我们的key：",is_directory_empty)
             if is_publish:
                 log.append_log('加载任务')
                 log.append_log(f'任务平台：{item["platform"]}')
                 topic = item['title'] + '\n' + item['article_info']
                 log.append_log('开始生产内容')
-                is_create,article = self.produce_content(topic, selected_model,api_key,prompt,item['id'],is_not_full)
+                is_create,article = self.produce_content(topic, selected_model,api_key,prompt,item['id'],is_directory_empty)
                 log.append_log('开始处理图片')
                 img_list = precess_image(item['img_list'], item['id'], log, article)
                 img_l = os.listdir(img_list)
@@ -145,17 +144,18 @@ class TaskService:
             print(e)
             log.append_log(f'Unexpected error: {e}')
 
-    def produce_content(self, topic, selected_model, api_key, prompt, _id, is_not_full):
-        """生产内容
+    def produce_content(self, topic, selected_model, api_key, prompt, _id, is_directory_empty):
+        """
+        生产内容
         Args:
             topic: 文章主题
             selected_model: 选择的模型
             api_key: API密钥
             prompt: 提示词
-            _id: 文章ID
-            is_not_full: 是否使用内部模型
+            _id: 任务ID
+            is_directory_empty: 生成文章目录是否为空
         Returns:
-            tuple: (是否成功, 文章内容)
+            tuple: (是否创建成功, 文章内容)
         """
         try:
             # 检查输入参数
@@ -164,7 +164,7 @@ class TaskService:
                 return False, None
 
             # 尝试生成文章
-            article, usetokens, enable = article_create(topic, selected_model, api_key, prompt, is_not_full)
+            article, usetokens, enable = article_create(topic, selected_model, api_key, prompt, is_directory_empty)
             
             # 如果生成失败，直接返回
             if not article:

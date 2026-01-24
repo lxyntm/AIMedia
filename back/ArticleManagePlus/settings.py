@@ -34,10 +34,12 @@ env = environ.Env(
     WECHAT_PAY_CERT_SERIAL_NO=(str, ""),
     WECHAT_PAY_APIV3_KEY=(str, ""),
     WECHAT_PAY_NOTIFY_URL=(str, ""),
+    USE_SYSTEM_MODEL=(bool, True),
 )
 
 # reading .env file
-environ.Env.read_env()
+import os
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -203,6 +205,9 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "AiMediaPlus API接口文档",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    "SWAGGER_UI_DIST": "https://unpkg.com/swagger-ui-dist@5",  # 使用 unpkg CDN 作为替代
+    "SWAGGER_UI_FAVICON_HREF": "https://unpkg.com/swagger-ui-dist@5/favicon-32x32.png",
+    "REDOC_DIST": "https://unpkg.com/redoc@next/bundles/redoc.standalone.js",
 }
 
 
@@ -229,3 +234,6 @@ WECHAT_PAY_CERT_SERIAL_NO = env("WECHAT_PAY_CERT_SERIAL_NO")
 WECHAT_PAY_APIV3_KEY = env("WECHAT_PAY_APIV3_KEY")
 # 回调地址
 WECHAT_PAY_NOTIFY_URL = env("WECHAT_PAY_NOTIFY_URL")
+
+# 系统模型配置
+USE_SYSTEM_MODEL = env("USE_SYSTEM_MODEL")

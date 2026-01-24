@@ -407,6 +407,39 @@ class LoginWindow(QMainWindow):
                 # 保存token
                 AuthService.save_token(token)
                 
+                # 尝试获取用户信息，保存openid
+                try:
+                    import requests
+                    import json
+                    from PySide6.QtCore import QSettings
+                    
+                    # 获取后端地址
+                    backend_url = AuthService.get_backend_url()
+                    user_info_url = f"{backend_url}/user/profile/"
+                    
+                    headers = {
+                        'Authorization': f'Bearer {token}',
+                        'Content-Type': 'application/json'
+                    }
+                    
+                    response = requests.get(user_info_url, headers=headers)
+                    
+                    if response.status_code == 200:
+                        result = response.json()
+                        if result.get('code') == 0:
+                            user_info = result.get('result', {})
+                            open_id = user_info.get('open_id')
+                            
+                            # 保存open_id
+                            if open_id:
+                                settings = QSettings("AiMedia", "ai-media")
+                                settings.setValue("openid", open_id)
+                                print(f"OpenID saved: {open_id}")
+                            else:
+                                print("No open_id in user info response")
+                except Exception as e:
+                    print(f"获取用户信息失败: {str(e)}")
+                
                 # 打开主窗口
                 self.open_main_window()
                 
@@ -446,6 +479,7 @@ class LoginWindow(QMainWindow):
             # 调用API进行邮箱登录
             import requests
             import json
+            from PySide6.QtCore import QSettings
             
             # 获取后端地址
             backend_url = AuthService.get_backend_url()
@@ -463,10 +497,20 @@ class LoginWindow(QMainWindow):
                 if result.get('code') == 0:
                     token_data = result.get('result', {})
                     access_token = token_data.get('access')
+                    user_info = token_data.get('user_info', {})
+                    open_id = user_info.get('open_id')
                     
                     if access_token:
                         # 保存token
                         AuthService.save_token(access_token)
+                        
+                        # 保存open_id
+                        if open_id:
+                            settings = QSettings("AiMedia", "ai-media")
+                            settings.setValue("openid", open_id)
+                            print(f"OpenID saved: {open_id}")
+                        else:
+                            print("No open_id in response")
                         
                         # 打开主窗口
                         self.open_main_window()
@@ -509,6 +553,7 @@ class LoginWindow(QMainWindow):
             # 调用API进行邮箱注册
             import requests
             import json
+            from PySide6.QtCore import QSettings
             
             # 获取后端地址
             backend_url = AuthService.get_backend_url()
@@ -527,10 +572,20 @@ class LoginWindow(QMainWindow):
                 if result.get('code') == 0:
                     token_data = result.get('result', {})
                     access_token = token_data.get('access')
+                    user_info = token_data.get('user_info', {})
+                    open_id = user_info.get('open_id')
                     
                     if access_token:
                         # 保存token
                         AuthService.save_token(access_token)
+                        
+                        # 保存open_id
+                        if open_id:
+                            settings = QSettings("AiMedia", "ai-media")
+                            settings.setValue("openid", open_id)
+                            print(f"OpenID saved: {open_id}")
+                        else:
+                            print("No open_id in response")
                         
                         # 打开主窗口
                         self.open_main_window()

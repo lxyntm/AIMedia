@@ -36,8 +36,8 @@ class MaterialThread(QThread):
                 time.sleep(10)
                 return
 
-            is_publish, is_not_full, api_key, selected_model, prompt = check_user_token()
-            print(is_publish, is_not_full, api_key, selected_model, prompt)
+            is_publish, is_directory_empty, api_key, selected_model, prompt = check_user_token()
+            print(is_publish, is_directory_empty, api_key, selected_model, prompt)
             if not is_publish:
                 self.log_signal.emit('请先在模型中心配置')
                 return
@@ -80,7 +80,7 @@ class MaterialThread(QThread):
                     # 2. 生产内容
                     self.log_signal.emit('开始生产内容')
                     topic = material['title'] + '\n' + material['content']
-                    is_create, article = self.produce_content(topic, selected_model, api_key, prompt, material['id'],is_not_full)
+                    is_create, article = self.produce_content(topic, selected_model, api_key, prompt, material['id'],is_directory_empty)
                     
                     if not is_create:
                         self.log_signal.emit('文章生产失败')
@@ -112,10 +112,10 @@ class MaterialThread(QThread):
         except Exception as e:
             self.log_signal.emit(f'生产发布任务失败: {str(e)}')
             
-    def produce_content(self, topic, selected_model, api_key, prompt, _id,is_not_full):
+    def produce_content(self, topic, selected_model, api_key, prompt, _id,is_directory_empty):
         """生产内容"""
         try:
-            article, usetokens, enable = article_create(topic, selected_model, api_key, prompt,is_not_full)
+            article, usetokens, enable = article_create(topic, selected_model, api_key, prompt,is_directory_empty)
             
             if api_key is None:
                 lines = topic.splitlines()

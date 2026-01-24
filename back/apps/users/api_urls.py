@@ -29,6 +29,7 @@ urlpatterns = [
     path('login/', views.EmailLoginAPIView.as_view(), name='email_login'),
     path('auth/', views.RegisterLoginAPIView.as_view(), name='register_login'),
     path('profile/', views.UserProfileAPIView.as_view(), name='user_profile'),
+    path('system_model_config/', views.SystemModelConfigAPIView.as_view(), name='system_model_config'),
 ]
 
 

@@ -31,20 +31,54 @@ def initialize_fernet(key):
 
 # 解密字符串
 def decrypt_string(fernet, encrypted_text):
-    # 将字符串编码为字节
-    encrypted_bytes = encrypted_text.encode('utf-8')
-    # 解密
-    decrypted_bytes = fernet.decrypt(encrypted_bytes)
-    # 返回解密后的字符串
-    return decrypted_bytes.decode('utf-8')
+    try:
+        # 将字符串编码为字节
+        encrypted_bytes = encrypted_text.encode('utf-8')
+        print(f"Encrypted bytes length: {len(encrypted_bytes)}")
+        print(f"First 20 bytes: {encrypted_bytes[:20]}")
+        
+        # 解密
+        decrypted_bytes = fernet.decrypt(encrypted_bytes)
+        print(f"Decrypted bytes length: {len(decrypted_bytes)}")
+        print(f"Decrypted bytes: {decrypted_bytes}")
+        
+        # 返回解密后的字符串
+        decrypted_str = decrypted_bytes.decode('utf-8')
+        print(f"Decrypted string: {decrypted_str}")
+        return decrypted_str
+    except Exception as e:
+        print(f"Decryption error: {type(e).__name__}: {e}")
+        import traceback
+        traceback.print_exc()
+        return None
 
 def run_decrypt():
     settings = QSettings("AiMedia", "ai-media")
     openid = settings.value("openid")
+    print("openid:", openid)
+    
+    if not openid:
+        print("Error: No openid found")
+        return None
+        
     encrypted_text = get_gml_key()
-    if encrypted_text:
+    print("encrypted_text:", encrypted_text)
+    
+    if not encrypted_text:
+        print("Error: No encrypted text received")
+        return None
+        
+    if encrypted_text is False:
+        print("Error: Token usage exceeded limit")
+        return None
+        
+    try:
         key = generate_key_from_string(openid)
-        fernet = initialize_fernet(key.decode('utf-8'))
-        return decrypt_string(fernet, encrypted_text)
-    else:
+        print("Generated key:", key)
+        fernet = initialize_fernet(key)
+        dec_key = decrypt_string(fernet, encrypted_text)
+        print("key:", key.decode('utf-8'), "dec_key:", dec_key)
+        return dec_key
+    except Exception as e:
+        print(f"Error during decryption: {str(e)}")
         return None

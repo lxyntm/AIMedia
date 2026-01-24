@@ -14,7 +14,9 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
+from rest_framework.generics import GenericAPIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 from apps.users.models import (
     ActivationCode,
@@ -24,7 +26,7 @@ from apps.users.models import (
     UserSubscriptionLog,
     WechatPayOrder, Users, AiArticle, UserNotice,
 )
-from apps.users.serializers import AiArticleSerializer
+from apps.users.serializers import AiArticleSerializer, LoginSerializer, RegisterSerializer, UsersSerializer
 from utils import mixins, viewsets
 from utils.ai_model.writing_assistant import WritingAssistant
 from utils.common import generate_order_no
@@ -419,7 +421,7 @@ class AiArticleView(APIView):
         return JsonResponse({"status": "error", "message": "未登录"}, status=401)
 
 
-class AiArticleAPIView(APIView):
+class AiArticleAPIView(GenericAPIView):
     queryset = AiArticle.objects.all()
     permission_classes = [
         IsAuthenticated,
@@ -455,6 +457,11 @@ class AiArticleAPIView(APIView):
             status = False
         return success_response(status)
 
+    @extend_schema(
+        request=AiArticleSerializer,
+        responses={200: AiArticleSerializer},
+        description="创建 AI 文章"
+    )
     def post(self, request):
         # 从JWT token获取当前用户
         current_user = None
@@ -575,6 +582,21 @@ class WechatCheckAPIView(APIView):
         })
 
 
+class SystemModelConfigAPIView(APIView):
+    """获取系统模型配置API"""
+    
+    def get(self, request):
+        """获取系统模型配置"""
+        try:
+            # 从设置中获取是否使用系统模型
+            use_system_model = settings.USE_SYSTEM_MODEL
+            return success_response({
+                "use_system_model": use_system_model
+            })
+        except Exception as e:
+            return error_response(str(e))
+
+
 class UserProfileAPIView(APIView):
     """获取用户信息API"""
     permission_classes = [IsAuthenticated]
@@ -644,6 +666,11 @@ class NoticeViewSet(
 class EmailRegisterAPIView(APIView):
     """邮箱注册API"""
     
+    @extend_schema(
+        request=RegisterSerializer,
+        responses={200: UsersSerializer},
+        description="邮箱注册"
+    )
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
@@ -670,11 +697,16 @@ class EmailRegisterAPIView(APIView):
             return error_response(400, "该邮箱已被注册")
         
         try:
+            # 生成唯一的 openid 类似标识符
+            import uuid
+            generated_openid = f"email_{uuid.uuid4().hex[:20]}"
+            
             # 创建用户
             user = Users.objects.create_user(
                 email=email,
                 password=password,
-                nickname=nickname or email.split('@')[0]  # 如果没有提供昵称，默认使用邮箱用户名部分
+                nickname=nickname or email.split('@')[0],  # 如果没有提供昵称，默认使用邮箱用户名部分
+                open_id=generated_openid  # 设置生成的 openid
             )
             
             # 生成JWT token
@@ -688,6 +720,7 @@ class EmailRegisterAPIView(APIView):
                     "email": user.email,
                     "nickname": user.nickname,
                     "avatar": user.avatar,
+                    "open_id": user.open_id,  # 返回生成的 openid
                 }
             }, "注册成功")
         except Exception as e:
@@ -697,6 +730,11 @@ class EmailRegisterAPIView(APIView):
 class EmailLoginAPIView(APIView):
     """邮箱登录API"""
     
+    @extend_schema(
+        request=LoginSerializer,
+        responses={200: UsersSerializer},
+        description="邮箱登录"
+    )
     def post(self, request):
         username = request.data.get('username')  # 可以是邮箱、手机号或open_id
         password = request.data.get('password')
@@ -711,6 +749,13 @@ class EmailLoginAPIView(APIView):
         user = authenticate(request, username=username, password=password)
         
         if user is not None:
+            # 如果用户没有 open_id，生成一个
+            if not user.open_id:
+                import uuid
+                generated_openid = f"email_{uuid.uuid4().hex[:20]}"
+                user.open_id = generated_openid
+                user.save()
+            
             # 生成JWT token
             refresh = RefreshToken.for_user(user)
             

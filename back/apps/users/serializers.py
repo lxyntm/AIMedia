@@ -91,6 +91,17 @@ class AiArticleSerializer(serializers.ModelSerializer):
         }
 
 
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField(required=True, label="用户名/邮箱/手机号")
+    password = serializers.CharField(required=True, label="密码", write_only=True)
+
+
+class RegisterSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True, label="邮箱")
+    password = serializers.CharField(required=True, label="密码", write_only=True, min_length=6)
+    nickname = serializers.CharField(required=False, label="昵称")
+
+
 class NoticeSerializer(BaseSerializer):
     is_read = serializers.SerializerMethodField()
 

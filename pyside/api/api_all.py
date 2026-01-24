@@ -17,7 +17,7 @@ def check_vip():
     response = base_request.get("user/check_member/")
     return response
 
-# 获取是否可以发
+# 检查生成文章目录是否为空
 def token_not_full():
     base_request = ApiRequest()
     response = base_request.get("user/ai_article/")
@@ -111,6 +111,12 @@ def get_notice():
 def get_gml_key():
     base_request = ApiRequest()
     return base_request.get("user/gml_key/")
+
+
+# 获取系统模型配置
+def get_system_model_config():
+    base_request = ApiRequest()
+    return base_request.get("user/system_model_config/")
 
 
 

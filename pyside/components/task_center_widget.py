@@ -198,8 +198,8 @@ class TaskThread(QThread):
                     # 检查用户令牌
                     self.production_window.append_log('检测用户信息')
                     print("4. 检查用户令牌")
-                    is_publish, is_not_full, api_key, selected_model, prompt = check_user_token()
-                    print(f"   令牌检查结果: is_publish={is_publish}, is_not_full={is_not_full}, api_key={api_key}, selected_model={selected_model}, prompt={prompt}")
+                    is_publish, is_directory_empty, api_key, selected_model, prompt = check_user_token()
+                    print(f"   令牌检查结果: is_publish={is_publish}, is_directory_empty={is_directory_empty}, api_key={api_key}, selected_model={selected_model}, prompt={prompt}")
                     
                     if not is_publish:
                         self.production_window.append_log('用户配置无效')
@@ -247,7 +247,7 @@ class TaskThread(QThread):
                                 self.production_window.append_log('开始生产内容')
                                 print("222")
                                 is_create, article = self.task_service.produce_content(
-                                    topic, selected_model, api_key, prompt, item['id'], is_not_full
+                                    topic, selected_model, api_key, prompt, item['id'], is_directory_empty
                                 )
                                 print("444")
                                 if not self._running:
